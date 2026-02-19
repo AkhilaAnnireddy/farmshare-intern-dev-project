@@ -1,4 +1,4 @@
-/* Minimal styling - interns should improve this */
+/* Minimal styling - interns should improve this
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -6,4 +6,30 @@ body {
 
 #root {
   padding: 20px;
+} */
+
+.MuiCard-root {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.MuiCard-root:hover {
+  box-shadow: 0 4px 16px rgba(0, 111, 53, 0.12) !important;
+  transform: translateY(-1px);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F5F0E8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #006F35;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FF7B00;
 }
