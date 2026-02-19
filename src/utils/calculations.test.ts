@@ -20,7 +20,10 @@ describe("calculations utils", () => {
     });
 
     it("should floor partial animals", () => {
-      expect(calculateHeads(1000, 333)).toBe(2); // Bug: should be 3 (actually 3.003)
+      // This test has a wrong expected value
+      // Math: 1000 ÷ 333 = 3.003... Math.floor = 3 (correct answer)
+      // Changing the expected value to 3
+      expect(calculateHeads(1000, 333)).toBe(3); // Bug: should be 3 (actually 3.003)
     });
 
     it("should handle single animal", () => {
@@ -45,7 +48,10 @@ describe("calculations utils", () => {
 
     it("should handle fractional hours", () => {
       // 1 head * 30 minutes = 0.5 hours * $25 = $12.50
-      expect(calculateLaborValue(1, 30, 25)).toBe(15); // Wrong expectation!
+      // expect(calculateLaborValue(1, 30, 25)).toBe(15); // Wrong expectation!
+      // The test was expecting $15 which is incorrect
+      // FIX: Changed expected value from 15 to 12.50
+      expect(calculateLaborValue(1, 30, 25)).toBe(12.5);
     });
 
     it("should handle different time per animal", () => {
@@ -138,23 +144,31 @@ describe("calculations utils", () => {
           species: EAnimalSpecies.beef,
           totalHangingWeight: 2000,
           avgHangingWeight: 500,
-        }, // 3 heads (bug)
+        }, // 3 heads (bug) // 4 heads
         {
           species: EAnimalSpecies.hog,
           totalHangingWeight: 800,
           avgHangingWeight: 200,
-        }, // 3 heads (bug)
+        }, // 3 heads (bug) // 4 heads
         {
           species: EAnimalSpecies.lamb,
           totalHangingWeight: 300,
           avgHangingWeight: 100,
-        }, // 2 heads (bug)
+        }, // 2 heads (bug) // 3 heads
       ];
       // 3 heads * 30 min = 1.5 hrs * $25 = $37.50
       // 3 heads * 30 min = 1.5 hrs * $25 = $37.50
       // 2 heads * 30 min = 1 hr * $25 = $25
       // Total = $100
-      expect(calculateTotalLaborValue(animals, 30, 25)).toBe(100);
+      // expect(calculateTotalLaborValue(animals, 30, 25)).toBe(100);
+
+      // Math:
+      // Beef: 2000 lbs / 500 lbs = 4 heads * 30 min = 2 hrs * $25 = $50
+      // Hog:  800 lbs  / 200 lbs = 4 heads * 30 min = 2 hrs * $25 = $50
+      // Lamb: 300 lbs  / 100 lbs = 3 heads * 30 min = 1.5 hrs * $25 = $37.50
+      // Total = $137.50 (not $100)
+      // FIX: Changed expected value from 100 to 137.5
+      expect(calculateTotalLaborValue(animals, 30, 25)).toBe(137.5);
     });
   });
 });

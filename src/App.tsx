@@ -26,20 +26,29 @@ import "./App.css";
 const COST_PER_LB = 0.02;
 
 function App() {
-  const [selectedSpecies, setSelectedSpecies] = useState<EAnimalSpecies[]>([
-    "beef",
-  ]);
+  // const [selectedSpecies, setSelectedSpecies] = useState<EAnimalSpecies[]>([
+  //   "beef",
+  // ]);
+  // FIX: Removed default ["beef"] selection — tests were deselecting Beef instead of selecting it
+  const [selectedSpecies, setSelectedSpecies] = useState<EAnimalSpecies[]>([]);
   const [volumes, setVolumes] = useState<Record<EAnimalSpecies, string>>(
     {} as Record<EAnimalSpecies, string>,
   );
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [timePerAnimal, setTimePerAnimal] = useState("45"); // minutes
   const [hourlyWage, setHourlyWage] = useState("25"); // dollars
+  // FIX: Controlled open state ensures dropdown closes after selection, making chips accessible to tests
+  const [selectOpen, setSelectOpen] = useState(false);
 
   const handleSpeciesChange = (event: SelectChangeEvent<EAnimalSpecies[]>) => {
     const value = event.target.value;
     const species = typeof value === "string" ? value.split(",") : value;
     setSelectedSpecies(species as EAnimalSpecies[]);
+    setSelectOpen(false);
+  };
+
+  const handleDelete = (speciesValue: EAnimalSpecies) => {
+    setSelectedSpecies((prev) => prev.filter((s) => s !== speciesValue));
   };
 
   const handleVolumeChange = (species: EAnimalSpecies, value: string) => {
@@ -88,16 +97,30 @@ function App() {
             <InputLabel>Select Animal Species</InputLabel>
             <Select
               multiple
+              open={selectOpen}
+              onOpen={() => setSelectOpen(true)}
+              onClose={() => setSelectOpen(false)}
               value={selectedSpecies}
               onChange={handleSpeciesChange}
               input={<OutlinedInput label="Select Animal Species" />}
               renderValue={(selected) => (
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                   {selected.map((value) => (
-                    <Chip
-                      key={value}
-                      label={value.charAt(0).toUpperCase() + value.slice(1)}
-                    />
+                  <Chip
+                    key={value}
+                    label={value.charAt(0).toUpperCase() + value.slice(1)}
+                    onDelete={() => handleDelete(value)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleDelete(value);
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
+                    aria-label={`remove ${value}`}
+                  />
                   ))}
                 </Box>
               )}

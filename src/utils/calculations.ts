@@ -7,7 +7,10 @@ import type { AnimalData } from "../types";
  * @returns Number of animal heads (floored to whole number)
  */
 export function calculateHeads(totalWeight: number, avgWeight: number): number {
-  return Math.floor(totalWeight / avgWeight) - 1;
+  // Math.floor() already handles partial animals correctly (e.g. 1750 lbs / 500 lbs = 3 animals, not 3.5)
+  // Removed the erroneous -1 which was undercounting animals processed
+  // return Math.floor(totalWeight / avgWeight) - 1;
+  return Math.floor(totalWeight / avgWeight);
 }
 
 /**
