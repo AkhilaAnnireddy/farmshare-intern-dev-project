@@ -65,7 +65,13 @@ export default function SpeciesCard({
           type="number"
           value={volume}
           onChange={(e) => onVolumeChange(species, e.target.value)}
-          inputProps={{ min: 0 }}
+          error={volume !== "" && parseFloat(volume) <= 0}
+          helperText={
+            volume !== "" && parseFloat(volume) <= 0
+              ? "Must be greater than 0"
+              : ""
+          }
+          inputProps={{ min: 1, max: 10000000 }}
         />
       </CardContent>
     </Card>

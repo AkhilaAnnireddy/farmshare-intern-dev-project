@@ -136,7 +136,12 @@ function App() {
   };
 
   const handleVolumeChange = (species: EAnimalSpecies, value: string) => {
-    if (value === "" || parseFloat(value) >= 0) {
+    if (value === "") {
+      setVolumes((prev) => ({ ...prev, [species]: value }));
+      return;
+    }
+    const num = parseFloat(value);
+    if (!isNaN(num) && num > 0 && num <= 10000000) {
       setVolumes((prev) => ({ ...prev, [species]: value }));
     }
   };
@@ -224,7 +229,7 @@ function App() {
             <Box
               sx={{ display: "flex", gap: 4, alignItems: "flex-start", px: 2 }}
             >
-              <Box sx={{ flex: 2 }}>
+              <Box sx={{ flex: 1 }}>
                 <Paper sx={{ p: 3, mb: 3 }}>
                   <FormControl fullWidth sx={{ mb: 2 }}>
                     <InputLabel>Select Animal Species</InputLabel>
@@ -335,7 +340,24 @@ function App() {
                         label="Time Savings per Animal (minutes)"
                         type="number"
                         value={timePerAnimal}
-                        onChange={(e) => setTimePerAnimal(e.target.value)}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          if (
+                            e.target.value === "" ||
+                            (val > 0 && val <= 480)
+                          ) {
+                            setTimePerAnimal(e.target.value);
+                          }
+                        }}
+                        error={
+                          parseFloat(timePerAnimal) <= 0 || timePerAnimal === ""
+                        }
+                        helperText={
+                          parseFloat(timePerAnimal) <= 0 || timePerAnimal === ""
+                            ? "Must be greater than 0"
+                            : ""
+                        }
+                        inputProps={{ min: 1, max: 480 }}
                         sx={{ mb: 2 }}
                       />
                       <TextField
@@ -343,7 +365,22 @@ function App() {
                         label="Average Hourly Wage ($)"
                         type="number"
                         value={hourlyWage}
-                        onChange={(e) => setHourlyWage(e.target.value)}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          if (
+                            e.target.value === "" ||
+                            (val > 0 && val <= 500)
+                          ) {
+                            setHourlyWage(e.target.value);
+                          }
+                        }}
+                        error={parseFloat(hourlyWage) <= 0 || hourlyWage === ""}
+                        helperText={
+                          parseFloat(hourlyWage) <= 0 || hourlyWage === ""
+                            ? "Must be greater than 0"
+                            : ""
+                        }
+                        inputProps={{ min: 1, max: 500 }}
                       />
                     </Box>
                   </Collapse>
@@ -354,6 +391,10 @@ function App() {
                 totalSavings={calculateTotalAnnualSavings()}
                 totalCost={calculateTotalAnnualCost()}
                 netBenefit={netBenefit}
+                selectedSpecies={selectedSpecies}
+                volumes={volumes}
+                timePerAnimal={parseFloat(timePerAnimal) || 45}
+                hourlyWage={parseFloat(hourlyWage) || 25}
               />
             </Box>
           </Box>
