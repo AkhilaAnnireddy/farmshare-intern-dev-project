@@ -1,18 +1,33 @@
 import { EAnimalSpecies, AVG_HANGING_WEIGHTS } from "../types";
-import { calculateHeads } from "../utils/calculations";
+import { calculateHeads, calculateLaborValue } from "../utils/calculations";
 import { Card, CardContent, TextField, Typography, Box } from "@mui/material";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
 
 interface SpeciesCardProps {
   species: EAnimalSpecies;
   volume: string;
   onVolumeChange: (species: EAnimalSpecies, value: string) => void;
+  timePerAnimal: number;
+  hourlyWage: number;
 }
+
+const COST_PER_LB = 0.02;
 
 export default function SpeciesCard({
   species,
   volume,
   onVolumeChange,
+  timePerAnimal,
+  hourlyWage,
 }: SpeciesCardProps) {
+  const hasVolume = volume !== "" && parseFloat(volume) > 0;
+  const vol = hasVolume ? parseFloat(volume) : 0;
+  const heads = calculateHeads(vol, AVG_HANGING_WEIGHTS[species]);
+  const savings = calculateLaborValue(heads, timePerAnimal, hourlyWage);
+  const cost = vol * COST_PER_LB;
+  const net = savings - cost;
+
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
@@ -35,7 +50,7 @@ export default function SpeciesCard({
               (Avg: {AVG_HANGING_WEIGHTS[species]} lbs/animal)
             </Typography>
           </Typography>
-          {volume && parseFloat(volume) > 0 && (
+          {hasVolume && (
             <Box
               sx={{
                 display: "flex",
@@ -50,15 +65,12 @@ export default function SpeciesCard({
               }}
             >
               <Typography variant="body2" fontWeight={700} color="#006F35">
-                {calculateHeads(
-                  parseFloat(volume),
-                  AVG_HANGING_WEIGHTS[species],
-                ).toLocaleString()}{" "}
-                heads
+                {heads.toLocaleString()} heads
               </Typography>
             </Box>
           )}
         </Box>
+
         <TextField
           fullWidth
           label="Total Annual Hanging Weight (lbs)"
@@ -73,6 +85,52 @@ export default function SpeciesCard({
           }
           inputProps={{ min: 1, max: 10000000 }}
         />
+
+        {/* Per species savings breakdown */}
+        {hasVolume && (
+          <Box
+            sx={{
+              mt: 1.5,
+              display: "flex",
+              gap: 2,
+              flexWrap: "wrap",
+              px: 0.5,
+            }}
+          >
+            <Typography variant="caption" color="text.secondary">
+              Savings:{" "}
+              <strong style={{ color: "#006F35" }}>
+                ${savings.toFixed(2)}
+              </strong>
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Cost:{" "}
+              <strong style={{ color: "#d32f2f" }}>${cost.toFixed(2)}</strong>
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Net:{" "}
+              <strong style={{ color: net >= 0 ? "#006F35" : "#d32f2f" }}>
+                {net >= 0 ? (
+                  <CheckIcon
+                    sx={{
+                      fontSize: 14,
+                      verticalAlign: "middle",
+                      color: "#006F35",
+                    }}
+                  />
+                ) : (
+                  <CloseIcon
+                    sx={{
+                      fontSize: 14,
+                      verticalAlign: "middle",
+                      color: "#d32f2f",
+                    }}
+                  />
+                )}
+              </strong>
+            </Typography>
+          </Box>
+        )}
       </CardContent>
     </Card>
   );

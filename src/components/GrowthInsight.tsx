@@ -29,7 +29,6 @@ export default function GrowthInsight({
   if (!hasData) return null;
   if (totalCost === 0) return null;
 
-  // --- LOSS STATE ---
   if (netBenefit < 0) {
     let bestSpecies = "";
     let leastLbsNeeded = Infinity;
@@ -114,10 +113,32 @@ export default function GrowthInsight({
     );
   }
 
-  // --- PROFIT STATE ---
   const currentProfitPct = Math.round((netBenefit / totalCost) * 100);
+
+  const usesDollarMilestones = currentProfitPct > 100;
+
+  const nextDollarMilestone = Math.ceil((netBenefit + 1) / 50) * 50;
+  const dollarMilestoneAfter = nextDollarMilestone + 50;
+
   const nextMilestone = Math.ceil((currentProfitPct + 1) / 10) * 10;
   const milestoneAfter = nextMilestone + 10;
+
+  // Target net savings for each milestone
+  const targetNet1 = usesDollarMilestones
+    ? nextDollarMilestone
+    : totalCost * (nextMilestone / 100);
+
+  const targetNet2 = usesDollarMilestones
+    ? dollarMilestoneAfter
+    : totalCost * (milestoneAfter / 100);
+
+  const label1 = usesDollarMilestones
+    ? `$${nextDollarMilestone}/yr`
+    : `${nextMilestone}% return on Farmshare cost`;
+
+  const label2 = usesDollarMilestones
+    ? `$${dollarMilestoneAfter}/yr`
+    : `${milestoneAfter}% return`;
 
   // Find best species for suggestion
   let bestSpeciesName = "";
@@ -134,8 +155,7 @@ export default function GrowthInsight({
       }
     });
 
-  const calcLbsForProfitPct = (targetPct: number): number | null => {
-    const targetNet = totalCost * (targetPct / 100);
+  const calcLbsForTargetNet = (targetNet: number): number | null => {
     const additionalNetNeeded = targetNet - netBenefit;
     if (additionalNetNeeded <= 0) return 0;
 
@@ -184,11 +204,8 @@ export default function GrowthInsight({
     return Math.ceil(testVolume - bestSpeciesVolume);
   };
 
-  const lbsFor1 = calcLbsForProfitPct(nextMilestone);
-  const lbsFor2 = calcLbsForProfitPct(milestoneAfter);
-
-  const netAt1 = totalCost * (nextMilestone / 100);
-  const netAt2 = totalCost * (milestoneAfter / 100);
+  const lbsFor1 = calcLbsForTargetNet(targetNet1);
+  const lbsFor2 = calcLbsForTargetNet(targetNet2);
 
   return (
     <Box
@@ -206,7 +223,9 @@ export default function GrowthInsight({
         color="success.main"
         sx={{ mb: 1.5 }}
       >
-        You're already saving {currentProfitPct}% more than Farmshare costs!
+        {usesDollarMilestones
+          ? `You're saving $${netBenefit.toFixed(2)}/yr — great ROI!`
+          : `You're already saving ${currentProfitPct}% more than Farmshare costs!`}
       </Typography>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
         {lbsFor1 !== null && lbsFor1 > 0 && (
@@ -215,21 +234,14 @@ export default function GrowthInsight({
             <strong>
               {lbsFor1.toLocaleString()} more lbs of {bestSpeciesName}
             </strong>{" "}
-            could boost your savings to{" "}
-            <strong style={{ color: "#006F35" }}>
-              ${netAt1.toFixed(2)}/yr
-            </strong>{" "}
-            — a <strong>{nextMilestone}%</strong> return on your Farmshare cost
+            could boost your net savings to{" "}
+            <strong style={{ color: "#006F35" }}>{label1}</strong>
           </Typography>
         )}
         {lbsFor2 !== null && lbsFor2 > 0 && (
           <Typography variant="body2" color="text.secondary">
             Or go further — add <strong>{lbsFor2.toLocaleString()} lbs</strong>{" "}
-            to hit a <strong>{milestoneAfter}%</strong> return (
-            <strong style={{ color: "#006F35" }}>
-              ${netAt2.toFixed(2)}/yr
-            </strong>
-            )
+            to reach <strong style={{ color: "#006F35" }}>{label2}</strong>
           </Typography>
         )}
       </Box>

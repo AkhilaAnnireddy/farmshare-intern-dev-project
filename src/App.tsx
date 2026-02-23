@@ -341,6 +341,8 @@ function App() {
                           species={species}
                           volume={volumes[species] || ""}
                           onVolumeChange={handleVolumeChange}
+                          timePerAnimal={parseFloat(timePerAnimal) || 45}
+                          hourlyWage={parseFloat(hourlyWage) || 25}
                         />
                       ))}
                     </Box>
