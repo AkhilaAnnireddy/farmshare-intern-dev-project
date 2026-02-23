@@ -1,6 +1,7 @@
 import { Box, Divider, Paper, Typography, Button } from "@mui/material";
 import ROIChart from "./ROIChart";
 import { EAnimalSpecies } from "../types";
+import GrowthInsight from "./GrowthInsight";
 
 interface SummaryPanelProps {
   totalVolume: number;
@@ -93,8 +94,15 @@ export default function SummaryPanel({
             })}
           </Typography>
         </Box>
-
-        {/* ROI Chart below summary */}
+        <GrowthInsight
+          selectedSpecies={selectedSpecies}
+          volumes={volumes}
+          timePerAnimal={timePerAnimal}
+          hourlyWage={hourlyWage}
+          netBenefit={netBenefit}
+          totalSavings={totalSavings}
+          totalCost={totalCost}
+        />
         <ROIChart
           selectedSpecies={selectedSpecies}
           volumes={volumes}
@@ -102,8 +110,6 @@ export default function SummaryPanel({
           hourlyWage={hourlyWage}
         />
       </Paper>
-
-      {/* CTA */}
       <Box sx={{ textAlign: "center", py: 2 }}>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
           Ready to start saving? Join thousands of processors on Farmshare.

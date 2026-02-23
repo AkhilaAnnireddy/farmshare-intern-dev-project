@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Container,
   TextField,
@@ -109,15 +109,40 @@ function App() {
   //   "beef",
   // ]);
   // FIX: Removed default ["beef"] selection — tests were deselecting Beef instead of selecting it
-  const [selectedSpecies, setSelectedSpecies] = useState<EAnimalSpecies[]>([]);
+  const loadSavedState = () => {
+    try {
+      const saved = localStorage.getItem("farmshare-calculator");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      localStorage.removeItem("farmshare-calculator");
+    }
+    return null;
+  };
+
+  const saved = loadSavedState();
+
+  const [selectedSpecies, setSelectedSpecies] = useState<EAnimalSpecies[]>(
+    saved?.selectedSpecies ?? [],
+  );
   const [volumes, setVolumes] = useState<Record<EAnimalSpecies, string>>(
-    {} as Record<EAnimalSpecies, string>,
+    saved?.volumes ?? ({} as Record<EAnimalSpecies, string>),
+  );
+  const [timePerAnimal, setTimePerAnimal] = useState<string>(
+    saved?.timePerAnimal ?? "45",
+  );
+  const [hourlyWage, setHourlyWage] = useState<string>(
+    saved?.hourlyWage ?? "25",
   );
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [timePerAnimal, setTimePerAnimal] = useState("45"); // minutes
-  const [hourlyWage, setHourlyWage] = useState("25"); // dollars
   // FIX: Controlled open state ensures dropdown closes after selection, making chips accessible to tests
   const [selectOpen, setSelectOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "farmshare-calculator",
+      JSON.stringify({ selectedSpecies, volumes, timePerAnimal, hourlyWage }),
+    );
+  }, [selectedSpecies, volumes, timePerAnimal, hourlyWage]);
 
   const handleSpeciesChange = (event: SelectChangeEvent<EAnimalSpecies[]>) => {
     const value = event.target.value;
@@ -133,6 +158,15 @@ function App() {
   const handleClearAll = () => {
     setSelectedSpecies([]);
     setVolumes({} as Record<EAnimalSpecies, string>);
+    localStorage.setItem(
+      "farmshare-calculator",
+      JSON.stringify({
+        selectedSpecies: [],
+        volumes: {},
+        timePerAnimal,
+        hourlyWage,
+      }),
+    );
   };
 
   const handleVolumeChange = (species: EAnimalSpecies, value: string) => {
