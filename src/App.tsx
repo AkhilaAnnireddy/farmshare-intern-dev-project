@@ -105,10 +105,6 @@ const theme = createTheme({
 });
 
 function App() {
-  // const [selectedSpecies, setSelectedSpecies] = useState<EAnimalSpecies[]>([
-  //   "beef",
-  // ]);
-  // FIX: Removed default ["beef"] selection — tests were deselecting Beef instead of selecting it
   const loadSavedState = () => {
     try {
       const saved = localStorage.getItem("farmshare-calculator");
@@ -215,11 +211,12 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ minHeight: "100vh", backgroundColor: "#F5F0E8" }}>
+        {/* Navbar */}
         <Box
           sx={{
             backgroundColor: "#006F35",
             py: 2,
-            px: 4,
+            px: { xs: 2, md: 4 },
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -249,9 +246,11 @@ function App() {
             Learn More →
           </Button>
         </Box>
+
         <Container maxWidth="lg">
-          <Box sx={{ py: 5 }}>
-            <Box sx={{ mb: 4 }}>
+          <Box sx={{ py: { xs: 2, md: 5 } }}>
+            {/* Header */}
+            <Box sx={{ mb: { xs: 2, md: 4 } }}>
               <Typography variant="h4" component="h1" gutterBottom>
                 Meat Processor Value Calculator
               </Typography>
@@ -260,11 +259,20 @@ function App() {
                 every year.
               </Typography>
             </Box>
+
+            {/* Main Layout */}
             <Box
-              sx={{ display: "flex", gap: 4, alignItems: "flex-start", px: 2 }}
+              sx={{
+                display: "flex",
+                gap: 4,
+                alignItems: "flex-start",
+                px: { xs: 0, md: 2 },
+                flexDirection: { xs: "column", md: "row" },
+              }}
             >
-              <Box sx={{ flex: 1 }}>
-                <Paper sx={{ p: 3, mb: 3 }}>
+              {/* Left Column */}
+              <Box sx={{ flex: 1, width: "100%" }}>
+                <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
                   <FormControl fullWidth sx={{ mb: 2 }}>
                     <InputLabel>Select Animal Species</InputLabel>
                     <Select
@@ -308,6 +316,7 @@ function App() {
                       ))}
                     </Select>
                   </FormControl>
+
                   {selectedSpecies.length > 0 && (
                     <Box
                       sx={{
@@ -326,6 +335,7 @@ function App() {
                       </Button>
                     </Box>
                   )}
+
                   {selectedSpecies.length > 0 && (
                     <Box sx={{ mb: 3 }}>
                       <Typography
@@ -347,6 +357,7 @@ function App() {
                       ))}
                     </Box>
                   )}
+
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                     <Typography
                       variant="body2"
@@ -369,6 +380,7 @@ function App() {
                       <ExpandMoreIcon />
                     </IconButton>
                   </Box>
+
                   <Collapse in={showAdvanced}>
                     <Box sx={{ pt: 1 }}>
                       <TextField
@@ -422,6 +434,8 @@ function App() {
                   </Collapse>
                 </Paper>
               </Box>
+
+              {/* Right Column */}
               <SummaryPanel
                 totalVolume={getTotalVolume()}
                 totalSavings={calculateTotalAnnualSavings()}
