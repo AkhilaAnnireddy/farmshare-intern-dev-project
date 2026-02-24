@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Container,
   TextField,
@@ -9,16 +9,15 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Card,
-  CardContent,
   Collapse,
   IconButton,
   OutlinedInput,
   Chip,
   Button,
-  Divider,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import SpeciesCard from "./components/SpeciesCard";
+import SummaryPanel from "./components/SummaryPanel";
 import type { SelectChangeEvent } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import type { EAnimalSpecies } from "./types";
@@ -106,19 +105,40 @@ const theme = createTheme({
 });
 
 function App() {
-  // const [selectedSpecies, setSelectedSpecies] = useState<EAnimalSpecies[]>([
-  //   "beef",
-  // ]);
-  // FIX: Removed default ["beef"] selection — tests were deselecting Beef instead of selecting it
-  const [selectedSpecies, setSelectedSpecies] = useState<EAnimalSpecies[]>([]);
+  const loadSavedState = () => {
+    try {
+      const saved = localStorage.getItem("farmshare-calculator");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      localStorage.removeItem("farmshare-calculator");
+    }
+    return null;
+  };
+
+  const saved = loadSavedState();
+
+  const [selectedSpecies, setSelectedSpecies] = useState<EAnimalSpecies[]>(
+    saved?.selectedSpecies ?? [],
+  );
   const [volumes, setVolumes] = useState<Record<EAnimalSpecies, string>>(
-    {} as Record<EAnimalSpecies, string>,
+    saved?.volumes ?? ({} as Record<EAnimalSpecies, string>),
+  );
+  const [timePerAnimal, setTimePerAnimal] = useState<string>(
+    saved?.timePerAnimal ?? "45",
+  );
+  const [hourlyWage, setHourlyWage] = useState<string>(
+    saved?.hourlyWage ?? "25",
   );
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [timePerAnimal, setTimePerAnimal] = useState("45"); // minutes
-  const [hourlyWage, setHourlyWage] = useState("25"); // dollars
   // FIX: Controlled open state ensures dropdown closes after selection, making chips accessible to tests
   const [selectOpen, setSelectOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "farmshare-calculator",
+      JSON.stringify({ selectedSpecies, volumes, timePerAnimal, hourlyWage }),
+    );
+  }, [selectedSpecies, volumes, timePerAnimal, hourlyWage]);
 
   const handleSpeciesChange = (event: SelectChangeEvent<EAnimalSpecies[]>) => {
     const value = event.target.value;
@@ -134,10 +154,24 @@ function App() {
   const handleClearAll = () => {
     setSelectedSpecies([]);
     setVolumes({} as Record<EAnimalSpecies, string>);
+    localStorage.setItem(
+      "farmshare-calculator",
+      JSON.stringify({
+        selectedSpecies: [],
+        volumes: {},
+        timePerAnimal,
+        hourlyWage,
+      }),
+    );
   };
 
   const handleVolumeChange = (species: EAnimalSpecies, value: string) => {
-    if (value === "" || parseFloat(value) >= 0) {
+    if (value === "") {
+      setVolumes((prev) => ({ ...prev, [species]: value }));
+      return;
+    }
+    const num = parseFloat(value);
+    if (!isNaN(num) && num > 0 && num <= 10000000) {
       setVolumes((prev) => ({ ...prev, [species]: value }));
     }
   };
@@ -177,11 +211,12 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ minHeight: "100vh", backgroundColor: "#F5F0E8" }}>
+        {/* Navbar */}
         <Box
           sx={{
             backgroundColor: "#006F35",
             py: 2,
-            px: 4,
+            px: { xs: 2, md: 4 },
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -211,9 +246,11 @@ function App() {
             Learn More →
           </Button>
         </Box>
+
         <Container maxWidth="lg">
-          <Box sx={{ py: 5 }}>
-            <Box sx={{ mb: 4 }}>
+          <Box sx={{ py: { xs: 2, md: 5 } }}>
+            {/* Header */}
+            <Box sx={{ mb: { xs: 2, md: 4 } }}>
               <Typography variant="h4" component="h1" gutterBottom>
                 Meat Processor Value Calculator
               </Typography>
@@ -222,11 +259,20 @@ function App() {
                 every year.
               </Typography>
             </Box>
+
+            {/* Main Layout */}
             <Box
-              sx={{ display: "flex", gap: 4, alignItems: "flex-start", px: 2 }}
+              sx={{
+                display: "flex",
+                gap: 4,
+                alignItems: "flex-start",
+                px: { xs: 0, md: 2 },
+                flexDirection: { xs: "column", md: "row" },
+              }}
             >
-              <Box sx={{ flex: 2 }}>
-                <Paper sx={{ p: 3, mb: 3 }}>
+              {/* Left Column */}
+              <Box sx={{ flex: 1, width: "100%" }}>
+                <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
                   <FormControl fullWidth sx={{ mb: 2 }}>
                     <InputLabel>Select Animal Species</InputLabel>
                     <Select
@@ -270,6 +316,7 @@ function App() {
                       ))}
                     </Select>
                   </FormControl>
+
                   {selectedSpecies.length > 0 && (
                     <Box
                       sx={{
@@ -288,6 +335,7 @@ function App() {
                       </Button>
                     </Box>
                   )}
+
                   {selectedSpecies.length > 0 && (
                     <Box sx={{ mb: 3 }}>
                       <Typography
@@ -298,39 +346,18 @@ function App() {
                         Annual Processing Volume by Species
                       </Typography>
                       {selectedSpecies.map((species) => (
-                        <Card key={species} sx={{ mb: 2 }}>
-                          <CardContent>
-                            <Typography
-                              variant="subtitle1"
-                              gutterBottom
-                              fontWeight={600}
-                            >
-                              {species.charAt(0).toUpperCase() +
-                                species.slice(1)}
-                              <Typography
-                                component="span"
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ ml: 1 }}
-                              >
-                                (Avg: {AVG_HANGING_WEIGHTS[species]} lbs/animal)
-                              </Typography>
-                            </Typography>
-                            <TextField
-                              fullWidth
-                              label="Total Annual Hanging Weight (lbs)"
-                              type="number"
-                              value={volumes[species] || ""}
-                              onChange={(e) =>
-                                handleVolumeChange(species, e.target.value)
-                              }
-                              inputProps={{ min: 0 }}
-                            />
-                          </CardContent>
-                        </Card>
+                        <SpeciesCard
+                          key={species}
+                          species={species}
+                          volume={volumes[species] || ""}
+                          onVolumeChange={handleVolumeChange}
+                          timePerAnimal={parseFloat(timePerAnimal) || 45}
+                          hourlyWage={parseFloat(hourlyWage) || 25}
+                        />
                       ))}
                     </Box>
                   )}
+
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                     <Typography
                       variant="body2"
@@ -353,6 +380,7 @@ function App() {
                       <ExpandMoreIcon />
                     </IconButton>
                   </Box>
+
                   <Collapse in={showAdvanced}>
                     <Box sx={{ pt: 1 }}>
                       <TextField
@@ -360,7 +388,24 @@ function App() {
                         label="Time Savings per Animal (minutes)"
                         type="number"
                         value={timePerAnimal}
-                        onChange={(e) => setTimePerAnimal(e.target.value)}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          if (
+                            e.target.value === "" ||
+                            (val > 0 && val <= 480)
+                          ) {
+                            setTimePerAnimal(e.target.value);
+                          }
+                        }}
+                        error={
+                          parseFloat(timePerAnimal) <= 0 || timePerAnimal === ""
+                        }
+                        helperText={
+                          parseFloat(timePerAnimal) <= 0 || timePerAnimal === ""
+                            ? "Must be greater than 0"
+                            : ""
+                        }
+                        inputProps={{ min: 1, max: 480 }}
                         sx={{ mb: 2 }}
                       />
                       <TextField
@@ -368,139 +413,39 @@ function App() {
                         label="Average Hourly Wage ($)"
                         type="number"
                         value={hourlyWage}
-                        onChange={(e) => setHourlyWage(e.target.value)}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          if (
+                            e.target.value === "" ||
+                            (val > 0 && val <= 500)
+                          ) {
+                            setHourlyWage(e.target.value);
+                          }
+                        }}
+                        error={parseFloat(hourlyWage) <= 0 || hourlyWage === ""}
+                        helperText={
+                          parseFloat(hourlyWage) <= 0 || hourlyWage === ""
+                            ? "Must be greater than 0"
+                            : ""
+                        }
+                        inputProps={{ min: 1, max: 500 }}
                       />
                     </Box>
                   </Collapse>
                 </Paper>
               </Box>
-              <Box sx={{ flex: 2, position: "sticky", top: 24 }}>
-                <Paper sx={{ p: 3, mb: 3 }}>
-                  <Typography variant="h5" gutterBottom>
-                    Annual Summary
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
 
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      mb: 2,
-                    }}
-                  >
-                    <Typography variant="body1" color="text.secondary">
-                      Total Annual Volume:
-                    </Typography>
-                    <Typography variant="body1" fontWeight={700}>
-                      {getTotalVolume().toLocaleString()} lbs
-                    </Typography>
-                  </Box>
-
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      mb: 2,
-                    }}
-                  >
-                    <Typography variant="body1" color="text.secondary">
-                      Total Annual Savings:
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      fontWeight={700}
-                      color="success.main"
-                    >
-                      $
-                      {calculateTotalAnnualSavings().toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </Typography>
-                  </Box>
-
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      mb: 3,
-                    }}
-                  >
-                    <Typography variant="body1" color="text.secondary">
-                      Total Annual Cost:
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      fontWeight={700}
-                      color="error.main"
-                    >
-                      $
-                      {calculateTotalAnnualCost().toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </Typography>
-                  </Box>
-
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      backgroundColor: netBenefit >= 0 ? "#f0f9f4" : "#fff5f5",
-                      border: `2px solid ${
-                        netBenefit >= 0 ? "#006F35" : "#d32f2f"
-                      }`,
-                      borderRadius: 2,
-                      p: 2,
-                    }}
-                  >
-                    <Typography variant="h6" fontWeight={700}>
-                      Net Annual Benefit:
-                    </Typography>
-                    <Typography
-                      variant="h5"
-                      fontWeight={800}
-                      color={netBenefit >= 0 ? "success.main" : "error.main"}
-                    >
-                      $
-                      {netBenefit.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </Typography>
-                  </Box>
-                </Paper>
-                <Box sx={{ textAlign: "center", py: 2 }}>
-                  <Typography
-                    variant="body1"
-                    color="text.secondary"
-                    sx={{ mb: 2 }}
-                  >
-                    Ready to start saving? Join thousands of processors on
-                    Farmshare.
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    href="https://farmshare.co"
-                    target="_blank"
-                    sx={{
-                      backgroundColor: "#FF7B00",
-                      color: "#ffffff",
-                      px: 4,
-                      py: 1.5,
-                      fontSize: "1rem",
-                      width: "100%",
-                      "&:hover": {
-                        backgroundColor: "#e66e00",
-                      },
-                    }}
-                  >
-                    Get Started with Farmshare →
-                  </Button>
-                </Box>
-              </Box>
+              {/* Right Column */}
+              <SummaryPanel
+                totalVolume={getTotalVolume()}
+                totalSavings={calculateTotalAnnualSavings()}
+                totalCost={calculateTotalAnnualCost()}
+                netBenefit={netBenefit}
+                selectedSpecies={selectedSpecies}
+                volumes={volumes}
+                timePerAnimal={parseFloat(timePerAnimal) || 45}
+                hourlyWage={parseFloat(hourlyWage) || 25}
+              />
             </Box>
           </Box>
         </Container>
