@@ -126,3 +126,50 @@ describe("Meat Processor Value Calculator", () => {
     ).not.toBeInTheDocument();
   });
 });
+
+it("shows growth insight when volume is entered", async () => {
+  render(<App />);
+  const selectElement = screen.getByRole("combobox");
+  fireEvent.mouseDown(selectElement);
+  fireEvent.click(screen.getByRole("option", { name: /Beef/i }));
+
+  const volumeInput = await screen.findByLabelText(
+    /Total Annual Hanging Weight \(lbs\)/i,
+  );
+  fireEvent.change(volumeInput, { target: { value: "10000" } });
+
+  expect(
+    screen.getByText(/could boost your net savings to/i),
+  ).toBeInTheDocument();
+});
+
+it("shows per-species savings breakdown when volume is entered", async () => {
+  render(<App />);
+  const selectElement = screen.getByRole("combobox");
+  fireEvent.mouseDown(selectElement);
+  fireEvent.click(screen.getByRole("option", { name: /Beef/i }));
+
+  const volumeInput = await screen.findByLabelText(
+    /Total Annual Hanging Weight \(lbs\)/i,
+  );
+  fireEvent.change(volumeInput, { target: { value: "1000" } });
+
+  expect(screen.getAllByText(/Savings:/i)[0]).toBeInTheDocument();
+  expect(screen.getAllByText(/Cost:/i)[0]).toBeInTheDocument();
+});
+
+it("shows export button when data is entered", async () => {
+  render(<App />);
+  const selectElement = screen.getByRole("combobox");
+  fireEvent.mouseDown(selectElement);
+  fireEvent.click(screen.getByRole("option", { name: /Beef/i }));
+
+  const volumeInput = await screen.findByLabelText(
+    /Total Annual Hanging Weight \(lbs\)/i,
+  );
+  fireEvent.change(volumeInput, { target: { value: "1000" } });
+
+  expect(
+    screen.getByRole("button", { name: /export|download/i }),
+  ).toBeInTheDocument();
+});
