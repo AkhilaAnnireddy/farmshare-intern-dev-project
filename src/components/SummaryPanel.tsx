@@ -26,7 +26,7 @@ export default function SummaryPanel({
   hourlyWage,
 }: SummaryPanelProps) {
   return (
-    <Box sx={{ flex: 1, position: "sticky", top: 24 }}>
+    <Box sx={{ flex: 1, position: { xs: "relative", md: "sticky" }, top: 24 }}>
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="h5" gutterBottom>
           Annual Summary
