@@ -24,6 +24,7 @@ interface ROIChartProps {
   volumes: Record<EAnimalSpecies, string>;
   timePerAnimal: number;
   hourlyWage: number;
+  isMonthly: boolean;
 }
 
 const COST_PER_LB = 0.02;
@@ -39,6 +40,7 @@ export default function ROIChart({
   volumes,
   timePerAnimal,
   hourlyWage,
+  isMonthly,
 }: ROIChartProps) {
   const [view, setView] = useState<"overview" | "species">("overview");
 
@@ -48,6 +50,8 @@ export default function ROIChart({
   );
 
   if (!hasData) return null;
+
+  const divisor = isMonthly ? 12 : 1;
 
   const speciesData = selectedSpecies
     .filter((s) => volumes[s] && parseFloat(volumes[s]) > 0)
@@ -60,9 +64,9 @@ export default function ROIChart({
       const net = savings - cost;
       return {
         name: species.charAt(0).toUpperCase() + species.slice(1),
-        "Labor Savings": Math.round(savings),
-        "Farmshare Cost": Math.round(cost),
-        "Net Savings": Math.round(net),
+        "Labor Savings": Math.round(savings / divisor),
+        "Farmshare Cost": Math.round(cost / divisor),
+        "Net Savings": Math.round(net / divisor),
       };
     });
 

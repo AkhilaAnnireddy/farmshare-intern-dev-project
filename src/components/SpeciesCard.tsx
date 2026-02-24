@@ -10,6 +10,7 @@ interface SpeciesCardProps {
   onVolumeChange: (species: EAnimalSpecies, value: string) => void;
   timePerAnimal: number;
   hourlyWage: number;
+  isMonthly: boolean;
 }
 
 const COST_PER_LB = 0.02;
@@ -20,6 +21,7 @@ export default function SpeciesCard({
   onVolumeChange,
   timePerAnimal,
   hourlyWage,
+  isMonthly,
 }: SpeciesCardProps) {
   const hasVolume = volume !== "" && parseFloat(volume) > 0;
   const vol = hasVolume ? parseFloat(volume) : 0;
@@ -27,6 +29,9 @@ export default function SpeciesCard({
   const savings = calculateLaborValue(heads, timePerAnimal, hourlyWage);
   const cost = vol * COST_PER_LB;
   const net = savings - cost;
+  const displaySavings = savings / (isMonthly ? 12 : 1);
+  const displayCost = cost / (isMonthly ? 12 : 1);
+  const displayNet = net / (isMonthly ? 12 : 1);
 
   return (
     <Card sx={{ mb: 2 }}>
@@ -100,17 +105,19 @@ export default function SpeciesCard({
             <Typography variant="caption" color="text.secondary">
               Savings:{" "}
               <strong style={{ color: "#006F35" }}>
-                ${savings.toFixed(2)}
+                ${displaySavings.toFixed(2)}
               </strong>
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Cost:{" "}
-              <strong style={{ color: "#d32f2f" }}>${cost.toFixed(2)}</strong>
+              <strong style={{ color: "#d32f2f" }}>
+                ${displayCost.toFixed(2)}
+              </strong>
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Net:{" "}
               <strong style={{ color: net >= 0 ? "#006F35" : "#d32f2f" }}>
-                {net >= 0 ? (
+                {displayNet >= 0 ? (
                   <CheckIcon
                     sx={{
                       fontSize: 14,

@@ -10,6 +10,7 @@ interface GrowthInsightProps {
   netBenefit: number;
   totalSavings: number;
   totalCost: number;
+  isMonthly: boolean;
 }
 
 const COST_PER_LB = 0.02;
@@ -21,6 +22,7 @@ export default function GrowthInsight({
   hourlyWage,
   netBenefit,
   totalCost,
+  isMonthly,
 }: GrowthInsightProps) {
   const hasData = selectedSpecies.some(
     (s) => volumes[s] && parseFloat(volumes[s]) > 0,
@@ -133,11 +135,11 @@ export default function GrowthInsight({
     : totalCost * (milestoneAfter / 100);
 
   const label1 = usesDollarMilestones
-    ? `$${nextDollarMilestone}/yr`
+    ? `$${nextDollarMilestone}/${isMonthly ? "mo" : "yr"}`
     : `${nextMilestone}% return on Farmshare cost`;
 
   const label2 = usesDollarMilestones
-    ? `$${dollarMilestoneAfter}/yr`
+    ? `$${dollarMilestoneAfter}/${isMonthly ? "mo" : "yr"}`
     : `${milestoneAfter}% return`;
 
   // Find best species for suggestion
@@ -224,7 +226,9 @@ export default function GrowthInsight({
         sx={{ mb: 1.5 }}
       >
         {usesDollarMilestones
-          ? `You're saving $${netBenefit.toFixed(2)}/yr — great ROI!`
+          ? `You're saving $${netBenefit.toFixed(2)}/${
+              isMonthly ? "mo" : "yr"
+            } — great ROI!`
           : `You're already saving ${currentProfitPct}% more than Farmshare costs!`}
       </Typography>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>

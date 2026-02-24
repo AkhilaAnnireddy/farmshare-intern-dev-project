@@ -14,6 +14,7 @@ import {
   OutlinedInput,
   Chip,
   Button,
+  Switch,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import SpeciesCard from "./components/SpeciesCard";
@@ -132,6 +133,8 @@ function App() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   // FIX: Controlled open state ensures dropdown closes after selection, making chips accessible to tests
   const [selectOpen, setSelectOpen] = useState(false);
+  const [isMonthly, setIsMonthly] = useState(false);
+  const divisor = isMonthly ? 12 : 1;
 
   useEffect(() => {
     localStorage.setItem(
@@ -259,7 +262,24 @@ function App() {
                 every year.
               </Typography>
             </Box>
-
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+              <Typography variant="body2" color="text.secondary">
+                Annual
+              </Typography>
+              <Switch
+                checked={isMonthly}
+                onChange={(e) => setIsMonthly(e.target.checked)}
+                sx={{
+                  "& .MuiSwitch-switchBase.Mui-checked": { color: "#006F35" },
+                  "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                    backgroundColor: "#006F35",
+                  },
+                }}
+              />
+              <Typography variant="body2" color="text.secondary">
+                Monthly
+              </Typography>
+            </Box>
             {/* Main Layout */}
             <Box
               sx={{
@@ -353,6 +373,7 @@ function App() {
                           onVolumeChange={handleVolumeChange}
                           timePerAnimal={parseFloat(timePerAnimal) || 45}
                           hourlyWage={parseFloat(hourlyWage) || 25}
+                          isMonthly={isMonthly}
                         />
                       ))}
                     </Box>
@@ -437,14 +458,15 @@ function App() {
 
               {/* Right Column */}
               <SummaryPanel
-                totalVolume={getTotalVolume()}
-                totalSavings={calculateTotalAnnualSavings()}
-                totalCost={calculateTotalAnnualCost()}
-                netBenefit={netBenefit}
+                totalSavings={calculateTotalAnnualSavings() / divisor}
+                totalCost={calculateTotalAnnualCost() / divisor}
+                netBenefit={netBenefit / divisor}
+                totalVolume={getTotalVolume() / divisor}
                 selectedSpecies={selectedSpecies}
                 volumes={volumes}
                 timePerAnimal={parseFloat(timePerAnimal) || 45}
                 hourlyWage={parseFloat(hourlyWage) || 25}
+                isMonthly={isMonthly}
               />
             </Box>
           </Box>
