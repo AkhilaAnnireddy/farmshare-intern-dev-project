@@ -1,6 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import App from "./App";
+
+beforeEach(() => {
+  localStorage.clear();
+});
 
 describe("Meat Processor Value Calculator", () => {
   it("renders the calculator title", () => {
@@ -38,10 +42,10 @@ describe("Meat Processor Value Calculator", () => {
       screen.getByText(/Annual Processing Volume by Species/i),
     ).toBeInTheDocument();
   });
-  it("calculates annual savings and cost correctly", () => {
+  it("calculates annual savings and cost correctly", async () => {
     render(<App />);
 
-    const selectElement = screen.getByRole("combobox");
+    const selectElement = await screen.getByRole("combobox");
 
     // Open the dropdown and select Beef
     fireEvent.mouseDown(selectElement);
@@ -95,10 +99,10 @@ describe("Meat Processor Value Calculator", () => {
 
     // Check if chips are displayed for both species
     expect(
-      screen.getByText("Beef", { selector: ".MuiChip-label" }),
+      screen.getAllByText("Beef", { selector: ".MuiChip-label" })[0],
     ).toBeInTheDocument();
     expect(
-      screen.getByText("Hog", { selector: ".MuiChip-label" }),
+      screen.getAllByText("Hog", { selector: ".MuiChip-label" })[0],
     ).toBeInTheDocument();
   });
 
@@ -114,7 +118,7 @@ describe("Meat Processor Value Calculator", () => {
     fireEvent.click(beefOption);
 
     // This delete/remove button doesn't exist yet - interns need to add it
-    const deleteButton = screen.getByRole("button", { name: /remove|delete/i });
+    const deleteButton = screen.getByRole("button", { name: /remove beef/i });
     fireEvent.click(deleteButton);
 
     expect(
