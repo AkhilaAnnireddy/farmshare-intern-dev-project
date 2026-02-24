@@ -243,7 +243,7 @@ function App() {
               },
             }}
           >
-            Learn More →
+            Learn More
           </Button>
         </Box>
 

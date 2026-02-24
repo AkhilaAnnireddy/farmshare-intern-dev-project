@@ -140,7 +140,7 @@ export default function SummaryPanel({
             "&:hover": { backgroundColor: "#e66e00" },
           }}
         >
-          Get Started with Farmshare →
+          Get Started with Farmshare
         </Button>
       </Box>
     </Box>
